@@ -7,75 +7,55 @@
 <style>
 body{
   font-family:Arial;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  background:radial-gradient(circle at top,#1e3c72,#2a5298,#000);
   padding:15px;
 }
-.container{
-  max-width:420px;
-  margin:auto;
+.container{max-width:420px;margin:auto}
+.searchBox{margin-bottom:15px}
+input,button{
+  width:100%;padding:12px;margin:6px 0;font-size:16px;
+  border-radius:14px;border:none
 }
+input{outline:none;text-transform:uppercase}
+button{background:linear-gradient(135deg,#00c853,#64dd17);color:#fff;font-weight:bold}
+
+/* CARD */
 .card{
-  background:#ffffff;
-  border-radius:18px;
-  box-shadow:0 10px 25px rgba(0,0,0,.3);
+  backdrop-filter: blur(12px);
+  background:rgba(255,255,255,0.15);
+  border-radius:22px;
+  box-shadow:0 20px 40px rgba(0,0,0,.5);
   overflow:hidden;
-  text-align:center;
+  animation:pop .6s ease
 }
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+
 .header{
-  background:linear-gradient(135deg,#ff9800,#ff5722);
-  color:#fff;
-  padding:15px;
-  font-size:20px;
+  padding:16px;
+  text-align:center;
   font-weight:bold;
+  font-size:20px;
+  color:#fff;
+  background:linear-gradient(135deg,#ff512f,#dd2476)
 }
 .photo{
-  width:100%;
-  height:320px;
- object-fit: fill;
-  background:#eee;
+  width:100%;height:300px;object-fit:cover;background:#111;
+  object-fit: fill;
 }
-.details{
-  padding:15px;
-}
-.details h3{margin:8px 0;color:#333}
+.details{padding:16px;text-transform:uppercase;color:#fff}
+.name{font-size:22px;font-weight:bold;margin:8px 0;
+text-align: center;}
 .badge{
   display:inline-block;
-  padding:6px 12px;
-  border-radius:20px;
-  background:#198754;
-  color:#fff;
-  font-size:14px;
-  margin-bottom:10px;
+  padding:6px 14px;
+  border-radius:30px;
+  background:linear-gradient(135deg,#ffd200,#f7971e);
+  color:#000;font-size:14px;margin-bottom:10px;
+  text-align:end;
 }
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin:6px 0;
-  font-size:15px;
-}
-.label{color:#666}
-.value{font-weight:bold;color:#000}
-.searchBox{
-  margin-bottom:15px;
-}
-input,button{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  font-size:16px;
-  border-radius:10px;
-  border:none;
-}
-input{
-  outline:none;
-  text-transform: uppercase;
-}
-input{outline:none}
-button{
-  background:#00c853;
-  color:#fff;
-  font-weight:bold;
-}
+.row{display:flex;justify-content:space-between;margin:8px 0}
+.label{opacity:.8}
+.value{font-weight:bold}
 </style>
 </head>
 <body>
@@ -88,6 +68,8 @@ button{
   </div>
 
   <div id="out"></div>
+
+<!-- New Glassmorphism Card Style -->
 
 </div>
 
@@ -103,14 +85,14 @@ function showPlayer(){
 
   out.innerHTML = `
   <div class="card">
-    <div class="header">🏏 PLAYER PROFILE</div>
+    <div class="header"> PLAYER PROFILE </div>
     ${p.img ? `<img class="photo" src="${p.img}">` : `<div class="photo"></div>`}
     <div class="details">
-      <h3>${p.name}</h3>
+      <div class="name">${p.name}</div>
       <div class="badge">${p.team || 'TEAM NOT SET'}</div>
-      <div class="row"><span class="label">Role</span><span class="value">${p.role}</span></div>
-      <div class="row"><span class="label">Base Price</span><span class="value">${p.base}</span></div>
-      <div class="row"><span class="label">Sold Price</span><span class="value">${p.sold || 'Not Sold'}</span></div>
+      <div class="row"><span class="label">ROLE</span><span class="value">${p.role}</span></div>
+      <div class="row"><span class="label">BASE PRICE</span><span class="value">${p.base}</span></div>
+      <div class="row"><span class="label">SOLD PRICE</span><span class="value">${p.sold || 'NOT SOLD'}</span></div>
     </div>
   </div>`;
 }
