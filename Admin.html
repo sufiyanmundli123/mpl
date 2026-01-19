@@ -1,72 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<title>Admin Panel - Player Management</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{font-family:Arial;background:#eef2f5;padding:15px}
-.box{background:#fff;padding:15px;border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,.15)}
-input,button{width:100%;padding:10px;margin:6px 0}
-button{background:#0d6efd;color:#fff;border:none;border-radius:6px}
+body{
+  font-family:Arial;
+  background:#0f2027;
+  color:#fff;
+  padding:15px;
+}
+h2{text-align:center}
+
+.box{
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(10px);
+  padding:15px;
+  border-radius:16px;
+  margin-bottom:15px;
+}
+
+input,button{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:10px;
+  border:none;
+  font-size:15px;
+}
+
+button{
+  background:#00c853;
+  color:#fff;
+  font-weight:bold;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:12px;
+}
+
+.card{
+  background:#fff;
+  color:#000;
+  border-radius:14px;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+.card img{
+  width:100%;
+  height:120px;
+  object-fit:cover;
+}
+
+.card .info{
+  padding:8px;
+  font-size:13px;
+}
+
+.badge{
+  background:#ff9800;
+  color:#000;
+  padding:3px 8px;
+  border-radius:20px;
+  font-size:12px;
+}
 </style>
 </head>
+
 <body>
 
-<div class="box" id="loginBox">
-<h2>🔐 Admin Login</h2>
-<input type="password" id="pass" placeholder="Admin Password">
-<button onclick="login()">Login</button>
-<p id="msg"></p>
+<h2>🏏 Admin Player Dashboard</h2>
+
+<div class="box">
+  <h3>Add / Edit Player</h3>
+  <input id="pno" placeholder="Player Number">
+  <input id="pname" placeholder="Player Name">
+  <input id="prole" placeholder="Role">
+  <input id="pbase" placeholder="Base Price">
+  <input id="psold" placeholder="Sold Price">
+  <input type="file" id="pimg" accept="image/*">
+  <button onclick="savePlayer()">Save Player</button>
 </div>
 
-<div class="box" id="adminBox" style="display:none">
-<h2>🏏 Admin Panel</h2>
-<input id="pno" placeholder="Player Number">
-<input id="pname" placeholder="Player Name">
-<input id="prole" placeholder="Role">
-<input id="pteam" placeholder="Team Name">
-<input id="pbase" placeholder="Base Price">
-<input id="psold" placeholder="Sold Price">
-<input type="file" id="pimg" accept="image/*">
-<button onclick="savePlayer()">Save Player</button>
+<div class="box">
+  <h3>All Players <span id="count" class="badge"></span></h3>
+  <input id="search" placeholder="Search Player (No / Name)" onkeyup="loadPlayers()">
+  <div id="list" class="grid"></div>
 </div>
 
 <script>
-const PASSWORD="admin123";
-let players=JSON.parse(localStorage.getItem("players"))||{};
-
-function login(){
- if(pass.value===PASSWORD){
-  loginBox.style.display="none";
-  adminBox.style.display="block";
- }else msg.innerText="Wrong Password";
-}
+let players = JSON.parse(localStorage.getItem("players")) || {};
 
 function savePlayer(){
- let file=pimg.files[0];
- if(file){
-  let r=new FileReader();
-  r.onload=function(){
-   players[pno.value]={
-    name:pname.value,
-    role:prole.value,
-    team:pteam.value,
-    base:pbase.value,
-    sold:psold.value,
-    img:r.result
-   };
-   localStorage.setItem("players",JSON.stringify(players));
-   alert("Player Saved with Image");
-  };
-  r.readAsDataURL(file);
- }else{
-  players[pno.value]={name:pname.value,role:prole.value,base:pbase.value,sold:psold.value,img:""};
-  localStorage.setItem("players",JSON.stringify(players));
-  alert("Player Saved");
- }
+  if(!pno.value) return alert("Player number required");
+
+  let file = pimg.files[0];
+
+  if(file){
+    let reader = new FileReader();
+    reader.onload = function(){
+      players[pno.value] = {
+        name: pname.value.toUpperCase(),
+        role: prole.value.toUpperCase(),
+        base: pbase.value,
+        sold: psold.value,
+        img: reader.result
+      };
+      localStorage.setItem("players", JSON.stringify(players));
+      loadPlayers();
+    };
+    reader.readAsDataURL(file);
+  }else{
+    players[pno.value] = {
+      name: pname.value.toUpperCase(),
+      role: prole.value.toUpperCase(),
+      base: pbase.value,
+      sold: psold.value,
+      img: players[pno.value]?.img || ""
+    };
+    localStorage.setItem("players", JSON.stringify(players));
+    loadPlayers();
+  }
 }
+
+function loadPlayers(){
+  list.innerHTML = "";
+
+  let s = (search.value || "").toUpperCase();
+  let keys = Object.keys(players).filter(
+    no => no.includes(s) || players[no].name.includes(s)
+  );
+
+  count.innerText = "Total: " + keys.length;
+
+  keys.forEach(no => {
+    let p = players[no];
+    let d = document.createElement("div");
+    d.className = "card";
+
+    d.innerHTML = `
+      ${p.img ? `<img src="${p.img}">` : ""}
+      <div class="info">
+        <b>#${no}</b><br>
+        ${p.name}<br>
+        <span class="badge">EDIT</span>
+        <span class="badge" style="background:#dc3545;color:#fff">DELETE</span>
+      </div>
+    `;
+
+    d.onclick = () => editPlayer(no);
+    d.ondblclick = () => deletePlayer(no);
+
+    list.appendChild(d);
+  });
+}
+
+function editPlayer(no){
+  let p = players[no];
+  pno.value = no;
+  pname.value = p.name;
+  prole.value = p.role;
+  pbase.value = p.base;
+  psold.value = p.sold;
+}
+
+function deletePlayer(no){
+  if(confirm("Delete Player #" + no + " ?")){
+    delete players[no];
+    localStorage.setItem("players", JSON.stringify(players));
+    loadPlayers();
+  }
+}
+
+loadPlayers();
 </script>
+
 </body>
 </html>
-
