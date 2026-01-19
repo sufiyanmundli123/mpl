@@ -1,38 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>User View</title>
+<title>User View - Cricket Bidding</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:Arial;background:#f4f6f9;padding:15px}
-.box{background:#fff;padding:15px;border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,.15);text-align:center}
-img{width:150px;height:150px;border-radius:50%;object-fit:cover;margin:10px 0}
-input,button{width:100%;padding:10px;margin:6px 0}
-button{background:#198754;color:#fff;border:none;border-radius:6px}
+body{
+  font-family:Arial;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  padding:15px;
+}
+.container{
+  max-width:420px;
+  margin:auto;
+}
+.card{
+  background:#ffffff;
+  border-radius:18px;
+  box-shadow:0 10px 25px rgba(0,0,0,.3);
+  overflow:hidden;
+  text-align:center;
+}
+.header{
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  color:#fff;
+  padding:15px;
+  font-size:20px;
+  font-weight:bold;
+}
+.photo{
+  width:100%;
+  height:320px;
+  object-fit:cover;
+  background:#eee;
+}
+.details{
+  padding:15px;
+}
+.details h3{margin:8px 0;color:#333}
+.badge{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:20px;
+  background:#198754;
+  color:#fff;
+  font-size:14px;
+  margin-bottom:10px;
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin:6px 0;
+  font-size:15px;
+}
+.label{color:#666}
+.value{font-weight:bold;color:#000}
+.searchBox{
+  margin-bottom:15px;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  font-size:16px;
+  border-radius:10px;
+  border:none;
+}
+input{outline:none}
+button{
+  background:#00c853;
+  color:#fff;
+  font-weight:bold;
+}
 </style>
 </head>
 <body>
 
-<div class="box">
-<h2>👤 Player Profile</h2>
-<input id="searchNo" placeholder="Enter Player Number">
-<button onclick="show()">Show Player</button>
-<div id="out"></div>
+<div class="container">
+
+  <div class="searchBox">
+    <input id="searchNo" placeholder="Enter Player Number">
+    <button onclick="showPlayer()">Show Player</button>
+  </div>
+
+  <div id="out"></div>
+
 </div>
 
 <script>
-let players=JSON.parse(localStorage.getItem("players"))||{};
-function show(){
- let p=players[searchNo.value];
- if(p){
-  out.innerHTML=(p.img?`<img src="${p.img}">`:"")+
-  `<br><b>Name:</b> ${p.name}<br>
-   <b>Role:</b> ${p.role}<br>
-   <b>Base:</b> ${p.base}<br>
-   <b>Sold:</b> ${p.sold||"Not Sold"}`;
- }else out.innerText="Player Not Found";
+let players = JSON.parse(localStorage.getItem("players")) || {};
+
+function showPlayer(){
+  let p = players[searchNo.value];
+  if(!p){
+    out.innerHTML = '<div class="card"><div class="details"><h3>❌ Player Not Found</h3></div></div>';
+    return;
+  }
+
+  out.innerHTML = `
+  <div class="card">
+    <div class="header">🏏 PLAYER PROFILE</div>
+    ${p.img ? `<img class="photo" src="${p.img}">` : `<div class="photo"></div>`}
+    <div class="details">
+      <h3>${p.name}</h3>
+      <div class="badge">${p.team || 'TEAM NOT SET'}</div>
+      <div class="row"><span class="label">Role</span><span class="value">${p.role}</span></div>
+      <div class="row"><span class="label">Base Price</span><span class="value">${p.base}</span></div>
+      <div class="row"><span class="label">Sold Price</span><span class="value">${p.sold || 'Not Sold'}</span></div>
+    </div>
+  </div>`;
 }
 </script>
+
 </body>
 </html>
