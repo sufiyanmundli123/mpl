@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>User View</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial;background:#f4f6f9;padding:15px}
+.box{background:#fff;padding:15px;border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,.15);text-align:center}
+img{width:150px;height:150px;border-radius:50%;object-fit:cover;margin:10px 0}
+input,button{width:100%;padding:10px;margin:6px 0}
+button{background:#198754;color:#fff;border:none;border-radius:6px}
+</style>
+</head>
+<body>
+
+<div class="box">
+<h2>👤 Player Profile</h2>
+<input id="searchNo" placeholder="Enter Player Number">
+<button onclick="show()">Show Player</button>
+<div id="out"></div>
+</div>
+
+<script>
+let players=JSON.parse(localStorage.getItem("players"))||{};
+function show(){
+ let p=players[searchNo.value];
+ if(p){
+  out.innerHTML=(p.img?`<img src="${p.img}">`:"")+
+  `<br><b>Name:</b> ${p.name}<br>
+   <b>Role:</b> ${p.role}<br>
+   <b>Base:</b> ${p.base}<br>
+   <b>Sold:</b> ${p.sold||"Not Sold"}`;
+ }else out.innerText="Player Not Found";
+}
+</script>
+</body>
+</html>
