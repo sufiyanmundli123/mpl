@@ -25,6 +25,7 @@ button{background:#0d6efd;color:#fff;border:none;border-radius:6px}
 <input id="pno" placeholder="Player Number">
 <input id="pname" placeholder="Player Name">
 <input id="prole" placeholder="Role">
+<input id="pteam" placeholder="Team Name">
 <input id="pbase" placeholder="Base Price">
 <input id="psold" placeholder="Sold Price">
 <input type="file" id="pimg" accept="image/*">
@@ -50,6 +51,7 @@ function savePlayer(){
    players[pno.value]={
     name:pname.value,
     role:prole.value,
+    team:pteam.value,
     base:pbase.value,
     sold:psold.value,
     img:r.result
@@ -67,3 +69,4 @@ function savePlayer(){
 </script>
 </body>
 </html>
+
