@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial;background:#eef2f5;padding:15px}
+.box{background:#fff;padding:15px;border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,.15)}
+input,button{width:100%;padding:10px;margin:6px 0}
+button{background:#0d6efd;color:#fff;border:none;border-radius:6px}
+</style>
+</head>
+<body>
+
+<div class="box" id="loginBox">
+<h2>🔐 Admin Login</h2>
+<input type="password" id="pass" placeholder="Admin Password">
+<button onclick="login()">Login</button>
+<p id="msg"></p>
+</div>
+
+<div class="box" id="adminBox" style="display:none">
+<h2>🏏 Admin Panel</h2>
+<input id="pno" placeholder="Player Number">
+<input id="pname" placeholder="Player Name">
+<input id="prole" placeholder="Role">
+<input id="pbase" placeholder="Base Price">
+<input id="psold" placeholder="Sold Price">
+<input type="file" id="pimg" accept="image/*">
+<button onclick="savePlayer()">Save Player</button>
+</div>
+
+<script>
+const PASSWORD="admin123";
+let players=JSON.parse(localStorage.getItem("players"))||{};
+
+function login(){
+ if(pass.value===PASSWORD){
+  loginBox.style.display="none";
+  adminBox.style.display="block";
+ }else msg.innerText="Wrong Password";
+}
+
+function savePlayer(){
+ let file=pimg.files[0];
+ if(file){
+  let r=new FileReader();
+  r.onload=function(){
+   players[pno.value]={
+    name:pname.value,
+    role:prole.value,
+    base:pbase.value,
+    sold:psold.value,
+    img:r.result
+   };
+   localStorage.setItem("players",JSON.stringify(players));
+   alert("Player Saved with Image");
+  };
+  r.readAsDataURL(file);
+ }else{
+  players[pno.value]={name:pname.value,role:prole.value,base:pbase.value,sold:psold.value,img:""};
+  localStorage.setItem("players",JSON.stringify(players));
+  alert("Player Saved");
+ }
+}
+</script>
+</body>
+</html>
