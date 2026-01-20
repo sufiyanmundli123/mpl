@@ -2,25 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel - Player Management</title>
+<title>Admin Panel - Auction Management</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-  font-family:Arial;
-  background:#0f2027;
-  color:#fff;
-  padding:15px;
-}
+body{font-family:Arial;background:#0f2027;color:#fff;padding:15px}
 h2{text-align:center}
-
-.box{
-  background:rgba(255,255,255,0.1);
-  backdrop-filter:blur(10px);
-  padding:15px;
-  border-radius:16px;
-  margin-bottom:15px;
-}
+.box{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);padding:15px;border-radius:16px;margin-bottom:15px}
 
 input,button{
   width:100%;
@@ -28,19 +16,14 @@ input,button{
   margin:6px 0;
   border-radius:10px;
   border:none;
-  font-size:15px;
+  font-size:15px
 }
-
-button{
-  background:#00c853;
-  color:#fff;
-  font-weight:bold;
-}
+button{background:#00c853;color:#fff;font-weight:bold}
 
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  gap:12px;
+  gap:12px
 }
 
 .card{
@@ -48,156 +31,286 @@ button{
   color:#000;
   border-radius:14px;
   overflow:hidden;
-  cursor:pointer;
+  cursor:pointer
 }
-
 .card img{
   width:100%;
   height:120px;
-  object-fit:cover;
+  object-fit:cover
 }
-
-.card .info{
+.info{
   padding:8px;
   font-size:13px;
+  text-align:center
 }
 
 .badge{
   background:#ff9800;
-  color:#000;
   padding:3px 8px;
   border-radius:20px;
   font-size:12px;
+  margin:2px;
+  display:inline-block
 }
 .danger{background:#dc3545;color:#fff}
+.add{background:#28a745;color:#fff}
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
-<h2>🏏 Admin Player Dashboard</h2>
+<h2>🏏 Admin Dashboard</h2>
 
+<!-- TEAM ADD / EDIT -->
 <div class="box">
-  <h3>Add / Edit Player</h3>
-  <input id="pno" placeholder="Player Number">
-  <input id="pname" placeholder="Player Name">
-  <input id="prole" placeholder="Role">
-  <input id="pbase" placeholder="Base Price">
-  <input id="psold" placeholder="Sold Price">
-  <input type="file" id="pimg" accept="image/*">
-  <button onclick="savePlayer()">Save Player</button>
+<h3>Add / Edit Team</h3>
+<input id="tname" placeholder="Team Name">
+<input id="towner" placeholder="Team Owner">
+<input type="file" id="tlogo" accept="image/*">
+<button onclick="saveTeam()">Save Team</button>
 </div>
 
+<!-- PLAYER ADD / EDIT -->
 <div class="box">
-  <h3>Backup & Restore</h3>
-  <button onclick="exportData()">⬇️ Export Data</button>
-  <input type="file" id="importFile" accept=".json" onchange="importData()">
+<h3>Add / Edit Player</h3>
+<input id="pno" placeholder="Player Number">
+<input id="pname" placeholder="Player Name">
+<input id="prole" placeholder="Role">
+<input id="pbase" placeholder="Base Price">
+<input id="psold" placeholder="Sold Price">
+<input type="file" id="pimg" accept="image/*">
+<button onclick="savePlayer()">Save Player</button>
 </div>
 
+<!-- BACKUP -->
 <div class="box">
-  <h3>All Players <span id="count" class="badge"></span></h3>
-  <input id="search" placeholder="Search Player (No / Name)" onkeyup="loadPlayers()">
-  <div id="list" class="grid"></div>
+<h3>Backup & Restore</h3>
+<button onclick="exportData()">⬇️ Export Data</button>
+<input type="file" id="importFile" accept=".json" onchange="importData()">
+</div>
+
+<!-- TEAMS LIST -->
+<div class="box" id="teamBox">
+<h3>Teams</h3>
+<div id="teamList" class="grid"></div>
+</div>
+
+<!-- TEAM ASSIGN PAGE -->
+<div class="box hidden" id="assignBox">
+<h3 id="assignTitle"></h3>
+<input id="assignSearch" placeholder="Search Player (No / Name)" onkeyup="searchAssign()">
+<div id="assignList" class="grid"></div>
+<button onclick="closeAssign()">⬅ Back</button>
+</div>
+
+<!-- PLAYERS LIST -->
+<div class="box">
+<h3>All Players <span id="count" class="badge"></span></h3>
+<input id="searchPlayer" placeholder="Search Player" onkeyup="loadPlayers()">
+<div id="playerList" class="grid"></div>
 </div>
 
 <script>
 let players = JSON.parse(localStorage.getItem("players")) || {};
+let teams   = JSON.parse(localStorage.getItem("teams")) || {};
+let currentTeam = "";
 
+/* ---------- TEAM ---------- */
+function saveTeam(){
+  if(!tname.value) return alert("Team name required");
+  let r = new FileReader();
+  r.onload = e=>{
+    teams[tname.value.toUpperCase()] = {
+      owner: towner.value,
+      logo: e.target.result
+    };
+    localStorage.setItem("teams", JSON.stringify(teams));
+    loadTeams();
+  };
+  if(tlogo.files[0]) r.readAsDataURL(tlogo.files[0]);
+}
+
+function loadTeams(){
+  teamList.innerHTML="";
+  Object.keys(teams).forEach(t=>{
+    teamList.innerHTML += `
+    <div class="card" onclick="openAssign('${t}')">
+      <img src="${teams[t].logo}">
+      <div class="info">
+        <b>${t}</b><br>${teams[t].owner}<br>
+        <span class="badge" onclick="event.stopPropagation();editTeam('${t}')">EDIT</span>
+        <span class="badge danger" onclick="event.stopPropagation();deleteTeam('${t}')">DELETE</span>
+      </div>
+    </div>`;
+  });
+}
+
+function editTeam(t){
+  tname.value = t;
+  towner.value = teams[t].owner;
+}
+
+function deleteTeam(t){
+  if(confirm("Delete team "+t+" ?")){
+    delete teams[t];
+    Object.values(players).forEach(p=>{ if(p.team===t) p.team=""; });
+    localStorage.setItem("teams", JSON.stringify(teams));
+    localStorage.setItem("players", JSON.stringify(players));
+    loadTeams(); loadPlayers();
+  }
+}
+
+/* ---------- PLAYER ---------- */
 function savePlayer(){
-  if(!pno.value) return alert("Player number required");
-
-  let file = pimg.files[0];
-
-  const save = img => {
+  if(players[pno.value]){
+    alert("Player number already exists!");
+    return;
+  }
+  let r = new FileReader();
+  r.onload = e=>{
     players[pno.value] = {
       name: pname.value.toUpperCase(),
       role: prole.value.toUpperCase(),
       base: pbase.value,
       sold: psold.value,
-      img: img
+      team: players[pno.value]?.team || "",
+      img: e.target.result
     };
     localStorage.setItem("players", JSON.stringify(players));
     loadPlayers();
   };
-
-  if(file){
-    let reader = new FileReader();
-    reader.onload = e => save(e.target.result);
-    reader.readAsDataURL(file);
-  }else{
-    save(players[pno.value]?.img || "");
-  }
+  if(pimg.files[0]) r.readAsDataURL(pimg.files[0]);
 }
 
 function loadPlayers(){
-  list.innerHTML="";
-  let s=(search.value||"").toUpperCase();
-  let keys=Object.keys(players).filter(
-    no=>no.includes(s)||players[no].name.includes(s)
+  playerList.innerHTML="";
+  let s = (searchPlayer.value||"").toUpperCase();
+  let keys = Object.keys(players).filter(
+    no => no.includes(s) || players[no].name.includes(s)
   );
-
-  count.innerText="Total: "+keys.length;
+  count.innerText = "Total: " + keys.length;
 
   keys.forEach(no=>{
-    let p=players[no];
-    let d=document.createElement("div");
-    d.className="card";
-    d.innerHTML=`
+    let p = players[no];
+    playerList.innerHTML += `
+    <div class="card">
       ${p.img?`<img src="${p.img}">`:""}
       <div class="info">
-        <b>#${no}</b><br>
-        ${p.name}<br>
-        <span class="badge">EDIT</span>
-        <span class="badge danger">DELETE</span>
-      </div>`;
-    d.onclick=()=>editPlayer(no);
-    d.ondblclick=()=>deletePlayer(no);
-    list.appendChild(d);
+        <b>#${no}</b><br>${p.name}<br>
+        <small>${p.team || "NO TEAM"}</small><br>
+        <span class="badge" onclick="editPlayer('${no}')">EDIT</span>
+        <span class="badge danger" onclick="deletePlayer('${no}')">DELETE</span>
+      </div>
+    </div>`;
   });
 }
 
 function editPlayer(no){
-  let p=players[no];
-  pno.value=no;
-  pname.value=p.name;
-  prole.value=p.role;
-  pbase.value=p.base;
-  psold.value=p.sold;
+  let p = players[no];
+  pno.value=no; pname.value=p.name; prole.value=p.role;
+  pbase.value=p.base; psold.value=p.sold;
 }
 
 function deletePlayer(no){
-  if(confirm("Delete Player #"+no+" ?")){
+  if(confirm("Delete player #"+no+" ?")){
     delete players[no];
-    localStorage.setItem("players",JSON.stringify(players));
+    localStorage.setItem("players", JSON.stringify(players));
     loadPlayers();
   }
 }
 
-/* EXPORT / IMPORT */
+/* ---------- TEAM ASSIGN ---------- */
+function openAssign(t){
+  currentTeam=t;
+  assignTitle.innerText="Assign Players to "+t;
+  teamBox.classList.add("hidden");
+  assignBox.classList.remove("hidden");
+  loadAssign();
+}
+
+function closeAssign(){
+  assignBox.classList.add("hidden");
+  teamBox.classList.remove("hidden");
+}
+
+function loadAssign(){
+  assignList.innerHTML="";
+  Object.keys(players).forEach(no=>{
+    let p = players[no];
+    let added = p.team===currentTeam;
+    assignList.innerHTML += `
+    <div class="card">
+      ${p.img?`<img src="${p.img}">`:""}
+      <div class="info">
+        <b>#${no}</b><br>${p.name}<br>
+        ${added
+          ? `<span class="badge danger" onclick="removeFromTeam('${no}')">REMOVE</span>`
+          : `<span class="badge add" onclick="addToTeam('${no}')">ADD</span>`
+        }
+      </div>
+    </div>`;
+  });
+}
+
+function addToTeam(no){
+  players[no].team=currentTeam;
+  localStorage.setItem("players", JSON.stringify(players));
+  loadAssign(); loadPlayers();
+}
+
+function removeFromTeam(no){
+  players[no].team="";
+  localStorage.setItem("players", JSON.stringify(players));
+  loadAssign(); loadPlayers();
+}
+
+function searchAssign(){
+  let s = assignSearch.value.toUpperCase();
+  assignList.innerHTML="";
+  Object.keys(players).forEach(no=>{
+    let p = players[no];
+    if(no.includes(s) || p.name.includes(s)){
+      let added = p.team===currentTeam;
+      assignList.innerHTML += `
+      <div class="card">
+        ${p.img?`<img src="${p.img}">`:""}
+        <div class="info">
+          <b>#${no}</b><br>${p.name}<br>
+          ${added
+            ? `<span class="badge danger" onclick="removeFromTeam('${no}')">REMOVE</span>`
+            : `<span class="badge add" onclick="addToTeam('${no}')">ADD</span>`
+          }
+        </div>
+      </div>`;
+    }
+  });
+}
+
+/* ---------- BACKUP ---------- */
 function exportData(){
-  const data=JSON.stringify(players);
-  const blob=new Blob([data],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="players_backup.json";
+  const blob = new Blob([JSON.stringify({players,teams})],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download="auction_backup.json";
   a.click();
 }
-
 function importData(){
-  const file=importFile.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    localStorage.setItem("players",e.target.result);
-    players=JSON.parse(e.target.result);
-    loadPlayers();
-    alert("Data Imported Successfully");
+  let r=new FileReader();
+  r.onload=e=>{
+    let d=JSON.parse(e.target.result);
+    players=d.players||{};
+    teams=d.teams||{};
+    localStorage.setItem("players",JSON.stringify(players));
+    localStorage.setItem("teams",JSON.stringify(teams));
+    loadTeams(); loadPlayers();
   };
-  reader.readAsText(file);
+  r.readAsText(importFile.files[0]);
 }
 
-loadPlayers();
+/* INIT */
+loadTeams(); loadPlayers();
 </script>
+
 </body>
 </html>
-
