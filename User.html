@@ -41,7 +41,7 @@ input,button{
 }
 input{text-transform:uppercase}
 
-/* PLAYER CARD */
+/* CARD */
 .card{
   backdrop-filter: blur(12px);
   background:rgba(255,255,255,0.15);
@@ -81,6 +81,7 @@ input{text-transform:uppercase}
   object-fit:cover;
 }
 .info{text-align:center;padding:10px;font-weight:bold}
+.small{font-size:13px;opacity:.8}
 </style>
 </head>
 
@@ -88,20 +89,29 @@ input{text-transform:uppercase}
 
 <div class="container">
 
+<!-- IMPORT DATA -->
+<div class="card">
+  <div class="details">
+    <h3>📂 Import Auction Data</h3>
+    <input type="file" accept=".json" onchange="importData(this)">
+    <div class="small">Import file from Admin (any queary please contact Sufiyan)</div>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav>
   <button onclick="showSection('teams')">TEAMS</button>
   <button onclick="showSection('player')">PLAYER</button>
 </nav>
 
-<!-- PLAYER SEARCH (HIDDEN INITIALLY) -->
+<!-- PLAYER SEARCH -->
 <div id="playerSection" style="display:none">
   <input id="searchNo" placeholder="Enter Player Number">
   <button onclick="showPlayer()">Show Player</button>
   <div id="playerOut"></div>
 </div>
 
-<!-- TEAMS LIST (DEFAULT VIEW) -->
+<!-- TEAMS LIST (DEFAULT) -->
 <div id="teamsSection">
   <h2>🏏 Teams</h2>
   <div id="teamsGrid" class="grid"></div>
@@ -115,6 +125,27 @@ input{text-transform:uppercase}
 <script>
 let players = JSON.parse(localStorage.getItem("players")) || {};
 let teams   = JSON.parse(localStorage.getItem("teams")) || {};
+
+/* IMPORT DATA */
+function importData(input){
+  let file = input.files[0];
+  if(!file) return;
+
+  let reader = new FileReader();
+  reader.onload = e=>{
+    let data = JSON.parse(e.target.result);
+
+    players = data.players || {};
+    teams   = data.teams || {};
+
+    localStorage.setItem("players", JSON.stringify(players));
+    localStorage.setItem("teams", JSON.stringify(teams));
+
+    alert("Data imported successfully ✅");
+    loadTeams();
+  };
+  reader.readAsText(file);
+}
 
 /* SECTION SWITCH */
 function showSection(sec){
@@ -197,7 +228,7 @@ function backToTeams(){
 }
 
 /* INIT */
-loadTeams(); // Teams shown by default
+loadTeams(); // teams shown by default
 </script>
 
 </body>
