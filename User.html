@@ -2,87 +2,203 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>User View - Cricket Bidding</title>
+<title>User View - Cricket Auction</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
   font-family:Arial;
   background:radial-gradient(circle at top,#1e3c72,#2a5298,#000);
   padding:15px;
+  color:#fff;
 }
 .container{max-width:420px;margin:auto}
-.searchBox{margin-bottom:15px}
+
+/* NAV */
+nav{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
+}
+nav button{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+  background:#00c853;
+  color:#fff;
+}
+
+/* INPUTS */
 input,button{
-  width:100%;padding:12px;margin:6px 0;font-size:16px;
-  border-radius:14px;border:none
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  font-size:16px;
+  border-radius:14px;
+  border:none;
 }
 input{text-transform:uppercase}
-button{background:linear-gradient(135deg,#00c853,#64dd17);color:#fff;font-weight:bold}
 
+/* PLAYER CARD */
 .card{
   backdrop-filter: blur(12px);
   background:rgba(255,255,255,0.15);
   border-radius:22px;
   box-shadow:0 20px 40px rgba(0,0,0,.5);
   overflow:hidden;
+  margin-bottom:15px;
 }
 .header{
-  padding:16px;text-align:center;font-weight:bold;
-  font-size:20px;color:#fff;
-  background:linear-gradient(135deg,#ff512f,#dd2476)
+  padding:16px;
+  text-align:center;
+  font-weight:bold;
+  font-size:20px;
+  background:linear-gradient(135deg,#ff512f,#dd2476);
 }
-.photo{width:100%;height:300px;object-fit:fill;background:#111}
-.details{padding:16px;text-transform:uppercase;color:#fff}
-.name{font-size:22px;font-weight:bold;text-align:center}
+.photo{width:100%;height:260px;object-fit:cover;background:#111}
+.details{padding:16px;text-transform:uppercase}
+.name{text-align:center;font-size:22px;font-weight:bold}
 .row{display:flex;justify-content:space-between;margin:8px 0}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;
+}
+.teamCard,.playerCard{
+  background:#fff;
+  color:#000;
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+}
+.teamCard img,.playerCard img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+}
+.info{text-align:center;padding:10px;font-weight:bold}
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
-<div class="searchBox">
+<!-- NAV -->
+<nav>
+  <button onclick="showSection('teams')">TEAMS</button>
+  <button onclick="showSection('player')">PLAYER</button>
+</nav>
+
+<!-- PLAYER SEARCH (HIDDEN INITIALLY) -->
+<div id="playerSection" style="display:none">
   <input id="searchNo" placeholder="Enter Player Number">
   <button onclick="showPlayer()">Show Player</button>
+  <div id="playerOut"></div>
 </div>
 
-<input type="file" accept=".json" onchange="importUserData(this)">
+<!-- TEAMS LIST (DEFAULT VIEW) -->
+<div id="teamsSection">
+  <h2>🏏 Teams</h2>
+  <div id="teamsGrid" class="grid"></div>
+</div>
 
-<div id="out"></div>
+<!-- TEAM DETAIL -->
+<div id="teamDetail" style="display:none"></div>
+
 </div>
 
 <script>
-let players=JSON.parse(localStorage.getItem("players"))||{};
+let players = JSON.parse(localStorage.getItem("players")) || {};
+let teams   = JSON.parse(localStorage.getItem("teams")) || {};
 
-function importUserData(input){
-  const file=input.files[0];
-  const reader=new FileReader();
-  reader.onload=e=>{
-    localStorage.setItem("players",e.target.result);
-    players=JSON.parse(e.target.result);
-    alert("Data Loaded");
-  };
-  reader.readAsText(file);
+/* SECTION SWITCH */
+function showSection(sec){
+  playerSection.style.display = sec==="player" ? "block" : "none";
+  teamsSection.style.display  = sec==="teams"  ? "block" : "none";
+  teamDetail.style.display    = "none";
 }
 
+/* PLAYER PROFILE */
 function showPlayer(){
-  let p=players[searchNo.value];
+  let p = players[searchNo.value];
   if(!p){
-    out.innerHTML="<div class='card'><div class='details'>PLAYER NOT FOUND</div></div>";
+    playerOut.innerHTML =
+      "<div class='card'><div class='details'>PLAYER NOT FOUND</div></div>";
     return;
   }
-  out.innerHTML=`
+
+  playerOut.innerHTML = `
   <div class="card">
     <div class="header">PLAYER PROFILE</div>
-    ${p.img?`<img class="photo" src="${p.img}">`:""}
+    ${p.img ? `<img class="photo" src="${p.img}">` : ""}
     <div class="details">
       <div class="name">${p.name}</div>
       <div class="row"><span>ROLE</span><span>${p.role}</span></div>
+      <div class="row"><span>TEAM</span><span>${p.team || "NOT ASSIGNED"}</span></div>
       <div class="row"><span>BASE</span><span>${p.base}</span></div>
-      <div class="row"><span>SOLD</span><span>${p.sold||"NOT SOLD"}</span></div>
+      <div class="row"><span>SOLD</span><span>${p.sold || "NOT SOLD"}</span></div>
     </div>
   </div>`;
 }
+
+/* LOAD TEAMS */
+function loadTeams(){
+  teamsGrid.innerHTML="";
+  Object.keys(teams).forEach(t=>{
+    teamsGrid.innerHTML+=`
+    <div class="teamCard" onclick="openTeam('${t}')">
+      <img src="${teams[t].logo}">
+      <div class="info">${t}</div>
+    </div>`;
+  });
+}
+
+/* TEAM DETAIL */
+function openTeam(team){
+  teamsSection.style.display="none";
+  teamDetail.style.display="block";
+
+  let html=`
+    <button onclick="backToTeams()">⬅ Back</button>
+    <div class="card">
+      <img class="photo" src="${teams[team].logo}">
+      <div class="details">
+        <div class="name">${team}</div>
+        <div class="row">
+          <span>OWNER</span><span>${teams[team].owner}</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>PLAYERS</h3>
+    <div class="grid">`;
+
+  Object.values(players).forEach(p=>{
+    if(p.team === team){
+      html+=`
+      <div class="playerCard">
+        <img src="${p.img}">
+        <div class="info">${p.name}</div>
+      </div>`;
+    }
+  });
+
+  teamDetail.innerHTML = html + "</div>";
+}
+
+function backToTeams(){
+  teamDetail.style.display="none";
+  teamsSection.style.display="block";
+}
+
+/* INIT */
+loadTeams(); // Teams shown by default
 </script>
+
 </body>
 </html>
