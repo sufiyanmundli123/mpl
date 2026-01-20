@@ -69,6 +69,7 @@ button{
   border-radius:20px;
   font-size:12px;
 }
+.danger{background:#dc3545;color:#fff}
 </style>
 </head>
 
@@ -88,6 +89,12 @@ button{
 </div>
 
 <div class="box">
+  <h3>Backup & Restore</h3>
+  <button onclick="exportData()">⬇️ Export Data</button>
+  <input type="file" id="importFile" accept=".json" onchange="importData()">
+</div>
+
+<div class="box">
   <h3>All Players <span id="count" class="badge"></span></h3>
   <input id="search" placeholder="Search Player (No / Name)" onkeyup="loadPlayers()">
   <div id="list" class="grid"></div>
@@ -101,84 +108,96 @@ function savePlayer(){
 
   let file = pimg.files[0];
 
-  if(file){
-    let reader = new FileReader();
-    reader.onload = function(){
-      players[pno.value] = {
-        name: pname.value.toUpperCase(),
-        role: prole.value.toUpperCase(),
-        base: pbase.value,
-        sold: psold.value,
-        img: reader.result
-      };
-      localStorage.setItem("players", JSON.stringify(players));
-      loadPlayers();
-    };
-    reader.readAsDataURL(file);
-  }else{
+  const save = img => {
     players[pno.value] = {
       name: pname.value.toUpperCase(),
       role: prole.value.toUpperCase(),
       base: pbase.value,
       sold: psold.value,
-      img: players[pno.value]?.img || ""
+      img: img
     };
     localStorage.setItem("players", JSON.stringify(players));
     loadPlayers();
+  };
+
+  if(file){
+    let reader = new FileReader();
+    reader.onload = e => save(e.target.result);
+    reader.readAsDataURL(file);
+  }else{
+    save(players[pno.value]?.img || "");
   }
 }
 
 function loadPlayers(){
-  list.innerHTML = "";
-
-  let s = (search.value || "").toUpperCase();
-  let keys = Object.keys(players).filter(
-    no => no.includes(s) || players[no].name.includes(s)
+  list.innerHTML="";
+  let s=(search.value||"").toUpperCase();
+  let keys=Object.keys(players).filter(
+    no=>no.includes(s)||players[no].name.includes(s)
   );
 
-  count.innerText = "Total: " + keys.length;
+  count.innerText="Total: "+keys.length;
 
-  keys.forEach(no => {
-    let p = players[no];
-    let d = document.createElement("div");
-    d.className = "card";
-
-    d.innerHTML = `
-      ${p.img ? `<img src="${p.img}">` : ""}
+  keys.forEach(no=>{
+    let p=players[no];
+    let d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`
+      ${p.img?`<img src="${p.img}">`:""}
       <div class="info">
         <b>#${no}</b><br>
         ${p.name}<br>
         <span class="badge">EDIT</span>
-        <span class="badge" style="background:#dc3545;color:#fff">DELETE</span>
-      </div>
-    `;
-
-    d.onclick = () => editPlayer(no);
-    d.ondblclick = () => deletePlayer(no);
-
+        <span class="badge danger">DELETE</span>
+      </div>`;
+    d.onclick=()=>editPlayer(no);
+    d.ondblclick=()=>deletePlayer(no);
     list.appendChild(d);
   });
 }
 
 function editPlayer(no){
-  let p = players[no];
-  pno.value = no;
-  pname.value = p.name;
-  prole.value = p.role;
-  pbase.value = p.base;
-  psold.value = p.sold;
+  let p=players[no];
+  pno.value=no;
+  pname.value=p.name;
+  prole.value=p.role;
+  pbase.value=p.base;
+  psold.value=p.sold;
 }
 
 function deletePlayer(no){
-  if(confirm("Delete Player #" + no + " ?")){
+  if(confirm("Delete Player #"+no+" ?")){
     delete players[no];
-    localStorage.setItem("players", JSON.stringify(players));
+    localStorage.setItem("players",JSON.stringify(players));
     loadPlayers();
   }
 }
 
+/* EXPORT / IMPORT */
+function exportData(){
+  const data=JSON.stringify(players);
+  const blob=new Blob([data],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="players_backup.json";
+  a.click();
+}
+
+function importData(){
+  const file=importFile.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    localStorage.setItem("players",e.target.result);
+    players=JSON.parse(e.target.result);
+    loadPlayers();
+    alert("Data Imported Successfully");
+  };
+  reader.readAsText(file);
+}
+
 loadPlayers();
 </script>
-
 </body>
 </html>
+
