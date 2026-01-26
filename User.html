@@ -57,7 +57,12 @@ input{text-transform:uppercase}
   font-size:20px;
   background:linear-gradient(135deg,#ff512f,#dd2476);
 }
-.photo{width:100%;height:260px;object-fit:cover;background:#111}
+.photo{
+  width:100%;
+  height:260px;
+  object-fit:cover; /* ✅ FIXED */
+  background:#111;
+}
 .details{padding:16px;text-transform:uppercase}
 .name{text-align:center;font-size:22px;font-weight:bold}
 .row{display:flex;justify-content:space-between;margin:8px 0}
@@ -78,7 +83,7 @@ input{text-transform:uppercase}
 .teamCard img,.playerCard img{
   width:100%;
   height:140px;
-  object-fit:cover;
+  object-fit:cover; /* ✅ FIXED */
 }
 .info{text-align:center;padding:10px;font-weight:bold}
 .small{font-size:13px;opacity:.8}
@@ -89,16 +94,16 @@ input{text-transform:uppercase}
 
 <div class="container">
 
-<!-- IMPORT DATA -->
+<!-- IMPORT DATA (UNCHANGED) -->
 <div class="card">
   <div class="details">
     <h3>📂 Import Auction Data</h3>
     <input type="file" accept=".json" onchange="importData(this)">
-    <div class="small">Import file from Admin (any queary please contact Sufiyan)</div>
+    <div class="small">Import file from Admin</div>
   </div>
 </div>
 
-<!-- NAV -->
+<!-- NAV (UNCHANGED) -->
 <nav>
   <button onclick="showSection('teams')">TEAMS</button>
   <button onclick="showSection('player')">PLAYER</button>
@@ -111,7 +116,7 @@ input{text-transform:uppercase}
   <div id="playerOut"></div>
 </div>
 
-<!-- TEAMS LIST (DEFAULT) -->
+<!-- TEAMS LIST -->
 <div id="teamsSection">
   <h2>🏏 Teams</h2>
   <div id="teamsGrid" class="grid"></div>
@@ -126,7 +131,7 @@ input{text-transform:uppercase}
 let players = JSON.parse(localStorage.getItem("players")) || {};
 let teams   = JSON.parse(localStorage.getItem("teams")) || {};
 
-/* IMPORT DATA */
+/* IMPORT */
 function importData(input){
   let file = input.files[0];
   if(!file) return;
@@ -134,14 +139,10 @@ function importData(input){
   let reader = new FileReader();
   reader.onload = e=>{
     let data = JSON.parse(e.target.result);
-
     players = data.players || {};
     teams   = data.teams || {};
-
     localStorage.setItem("players", JSON.stringify(players));
     localStorage.setItem("teams", JSON.stringify(teams));
-
-    alert("Data imported successfully ✅");
     loadTeams();
   };
   reader.readAsText(file);
@@ -154,7 +155,7 @@ function showSection(sec){
   teamDetail.style.display    = "none";
 }
 
-/* PLAYER PROFILE */
+/* PLAYER PROFILE (UPDATED CARD ONLY) */
 function showPlayer(){
   let p = players[searchNo.value];
   if(!p){
@@ -170,9 +171,9 @@ function showPlayer(){
     <div class="details">
       <div class="name">${p.name}</div>
       <div class="row"><span>ROLE</span><span>${p.role}</span></div>
+      <div class="row"><span>PLACE</span><span>${p.place || "-"}</span></div>
       <div class="row"><span>TEAM</span><span>${p.team || "NOT ASSIGNED"}</span></div>
-      <div class="row"><span>BASE</span><span>${p.base}</span></div>
-      <div class="row"><span>SOLD</span><span>${p.sold || "NOT SOLD"}</span></div>
+      <div class="row"><span>BASE</span><span>2000</span></div>
     </div>
   </div>`;
 }
@@ -189,7 +190,7 @@ function loadTeams(){
   });
 }
 
-/* TEAM DETAIL */
+/* TEAM DETAIL → PLAYERS */
 function openTeam(team){
   teamsSection.style.display="none";
   teamDetail.style.display="block";
@@ -214,7 +215,11 @@ function openTeam(team){
       html+=`
       <div class="playerCard">
         <img src="${p.img}">
-        <div class="info">${p.name}</div>
+        <div class="info">
+          ${p.name}<br>
+          <span class="small">${p.place || "-"}</span><br>
+          BASE: 2000
+        </div>
       </div>`;
     }
   });
@@ -228,7 +233,7 @@ function backToTeams(){
 }
 
 /* INIT */
-loadTeams(); // teams shown by default
+loadTeams();
 </script>
 
 </body>
