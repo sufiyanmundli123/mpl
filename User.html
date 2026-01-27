@@ -59,8 +59,9 @@ input{text-transform:uppercase}
 }
 .photo{
   width:100%;
-  height: 300px;
-  object-fit: fill;/* ✅ FIXED */
+  height:360px;
+  object-fit:fill;          /* ✅ CLARITY FIX */
+  image-rendering:auto;      /* ✅ */
   background:#111;
 }
 .details{padding:16px;text-transform:uppercase}
@@ -83,7 +84,8 @@ input{text-transform:uppercase}
 .teamCard img,.playerCard img{
   width:100%;
   height:140px;
-  object-fit:cover; /* ✅ FIXED */
+  object-fit:cover;          /* ✅ CLARITY FIX */
+  image-rendering:auto;      /* ✅ */
 }
 .info{text-align:center;padding:10px;font-weight:bold}
 .small{font-size:13px;opacity:.8}
@@ -94,7 +96,7 @@ input{text-transform:uppercase}
 
 <div class="container">
 
-<!-- IMPORT DATA (UNCHANGED) -->
+<!-- IMPORT DATA -->
 <div class="card">
   <div class="details">
     <h3>📂 Import Auction Data</h3>
@@ -103,7 +105,7 @@ input{text-transform:uppercase}
   </div>
 </div>
 
-<!-- NAV (UNCHANGED) -->
+<!-- NAV -->
 <nav>
   <button onclick="showSection('teams')">TEAMS</button>
   <button onclick="showSection('player')">PLAYER</button>
@@ -155,7 +157,7 @@ function showSection(sec){
   teamDetail.style.display    = "none";
 }
 
-/* PLAYER PROFILE (UPDATED CARD ONLY) */
+/* PLAYER PROFILE */
 function showPlayer(){
   let p = players[searchNo.value];
   if(!p){
@@ -190,7 +192,7 @@ function loadTeams(){
   });
 }
 
-/* TEAM DETAIL → PLAYERS */
+/* TEAM DETAIL */
 function openTeam(team){
   teamsSection.style.display="none";
   teamDetail.style.display="block";
