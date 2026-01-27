@@ -106,20 +106,32 @@ function openPage(p){
  event.target.classList.add("active");
 }
 
-/* IMAGE COMPRESS */
+/* 🔥 IMAGE COMPRESSION — FIXED (CLEAR IMAGE) */
 function compress(file, cb){
- let i=new Image(), r=new FileReader();
- r.onload=e=>{
-  i.onload=()=>{
-   let c=document.createElement("canvas"), m=300, w=i.width, h=i.height;
-   if(w>h&&w>m){h*=m/w;w=m}else if(h>m){w*=m/h;h=m}
-   c.width=w;c.height=h;
-   c.getContext("2d").drawImage(i,0,0,w,h);
-   cb(c.toDataURL("image/jpeg",0.7));
+  let img = new Image();
+  let reader = new FileReader();
+
+  reader.onload = e => {
+    img.onload = () => {
+      let canvas = document.createElement("canvas");
+      let MAX = 450;              // 🔼 increased size
+      let w = img.width, h = img.height;
+
+      if(w > h && w > MAX){
+        h *= MAX / w; w = MAX;
+      }else if(h > MAX){
+        w *= MAX / h; h = MAX;
+      }
+
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+
+      cb(canvas.toDataURL("image/jpeg", 0.85)); // 🔼 higher quality
+    };
+    img.src = e.target.result;
   };
-  i.src=e.target.result;
- };
- r.readAsDataURL(file);
+  reader.readAsDataURL(file);
 }
 
 /* TEAM */
