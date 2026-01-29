@@ -58,6 +58,51 @@ button.red{background:#dc3545;color:#fff}
   </div>
 </div>
 
+<!-- 🆕 MANAGE TEAM -->
+<div id="manageTeam" class="page">
+  <div class="box">
+    <h3 id="manageTitle">Manage Team</h3>
+    <input type="hidden" id="manageKey">
+
+    <h4>OWNER</h4>
+    <input id="ownerName" placeholder="Owner Name">
+    <input type="file" id="ownerImg">
+
+    <h4>ICON 1</h4>
+    <input id="i1name" placeholder="Name">
+    <select id="i1cat">
+      <option>Batting</option>
+      <option>Bowling</option>
+      <option>All-Rounder</option>
+    </select>
+    <input id="i1place" placeholder="Place">
+    <input type="file" id="i1img">
+
+    <h4>ICON 2</h4>
+    <input id="i2name" placeholder="Name">
+    <select id="i2cat">
+      <option>Batting</option>
+      <option>Bowling</option>
+      <option>All-Rounder</option>
+    </select>
+    <input id="i2place" placeholder="Place">
+    <input type="file" id="i2img">
+
+    <h4>CAPTAIN</h4>
+    <input id="cname" placeholder="Name">
+    <select id="ccat">
+      <option>Batting</option>
+      <option>Bowling</option>
+      <option>All-Rounder</option>
+    </select>
+    <input id="cplace" placeholder="Place">
+    <input type="file" id="cimg">
+
+    <button class="primary" onclick="saveLeaders()">Save</button>
+    <button onclick="openPage('teams')">⬅ Back</button>
+  </div>
+</div>
+
 <!-- PLAYERS -->
 <div id="players" class="page">
   <div class="box">
@@ -146,6 +191,36 @@ function saveTeam(){
   loadTeams();
  });
 }
+// 🆕 OPEN MANAGE TEAM
+function openManageTeam(k){
+  manageKey.value = k;
+  manageTitle.innerText = "Manage Team: " + teams[k].name;
+  openPage("manageTeam");
+}
+
+// 🆕 SAVE OWNER + ICONS + CAPTAIN
+function saveLeaders(){
+  let k = manageKey.value;
+  if(!ownerImg.files[0] || !i1img.files[0] || !i2img.files[0] || !cimg.files[0]){
+    return alert("All photos required");
+  }
+
+  compress(ownerImg.files[0], o=>{
+  compress(i1img.files[0], i1=>{
+  compress(i2img.files[0], i2=>{
+  compress(cimg.files[0], c=>{
+    teams[k].leaders = {
+      owner:{ name: ownerName.value, img: o },
+      icons:[
+        { name:i1name.value, category:i1cat.value, place:i1place.value, img:i1 },
+        { name:i2name.value, category:i2cat.value, place:i2place.value, img:i2 }
+      ],
+      captain:{ name:cname.value, category:ccat.value, place:cplace.value, img:c }
+    };
+    localStorage.setItem("teams", JSON.stringify(teams));
+    alert("Team leaders saved");
+  });});});});
+}
 
 function loadTeams(){
  teamList.innerHTML="";
@@ -153,7 +228,7 @@ function loadTeams(){
  Object.keys(teams).forEach(k=>{
   let t=teams[k];
   teamList.innerHTML+=`
-  <div class="card">
+  <div class="card" onclick="openManageTeam('${k}')">
     <img src="${t.logo}">
     <div class="info">
       <b>${t.name}</b><br>${t.owner}<br>
