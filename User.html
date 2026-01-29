@@ -60,8 +60,8 @@ input{text-transform:uppercase}
 .photo{
   width:100%;
   height:360px;
-  object-fit:fill;          /* ✅ CLARITY FIX */
-  image-rendering:auto;      /* ✅ */
+  object-fit:fill;
+  image-rendering:auto;
   background:#111;
 }
 .details{padding:16px;text-transform:uppercase}
@@ -84,24 +84,117 @@ input{text-transform:uppercase}
 .teamCard img,.playerCard img{
   width:100%;
   height:140px;
-  object-fit:cover;          /* ✅ CLARITY FIX */
-  image-rendering:auto;      /* ✅ */
+  object-fit:cover;
+  image-rendering:auto;
 }
 .info{text-align:center;padding:10px;font-weight:bold}
 .small{font-size:13px;opacity:.8}
+
+/* BADGES */
+.badge{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  margin-top:6px;
+}
+.owner{background:#ffc107;color:#000}
+.icon{background:#0d6efd;color:#fff}
+.captain{background:#dc3545;color:#fff}
+
+/* ===== SPECIAL LEADER CARDS ===== */
+.ownerCard{
+  border:3px solid #ffc107;
+  box-shadow:0 0 15px rgba(255,193,7,.7);
+}
+
+.iconCard{
+  border:3px solid #0d6efd;
+  box-shadow:0 0 15px rgba(13,110,253,.6);
+}
+
+.captainCard{
+  border:3px solid #dc3545;
+  box-shadow:0 0 18px rgba(220,53,69,.7);
+}
+/* ===== LEADERS ROW (2nd row) ===== */
+.leadersGrid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr); /* EXACT 3 CARDS */
+  gap:12px;
+  margin-bottom:15px;
+}
+/* ===== SMALL OWNER CARD ===== */
+.ownerCard .photo{
+  height:280px; 
+  object-fit: fill;       /* ⬇️ reduced from 360px */
+}
+
+.ownerCard .details{
+  padding:10px;        /* ⬇️ reduced padding */
+}
+
+.ownerCard .name{
+  font-size:18px;      /* ⬇️ smaller name */
+}
+
+/* ===== WELCOME HEADER STYLE ===== */
+.welcomeBox{
+  text-align:center;
+  margin-bottom:18px;
+  animation:fadeSlide 1.2s ease forwards;
+}
+
+.welcomeTitle{
+  font-size:16px;
+  font-weight:900;
+  letter-spacing:1px;
+  margin-bottom:6px;
+  background:linear-gradient(90deg,#ffd200,#ff512f,#dd2476);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:0 0 18px rgba(255,81,47,.6);
+}
+
+.welcomeSub{
+  font-size:13px;
+  font-weight:bold;
+  letter-spacing:.5px;
+  color:#ffffffcc;
+  text-transform:uppercase;
+  text-shadow:0 0 10px rgba(255,255,255,.4);
+}
+
+/* ===== ANIMATION ===== */
+@keyframes fadeSlide{
+  from{
+    opacity:0;
+    transform:translateY(-20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+
 </style>
 </head>
 
 <body>
 
 <div class="container">
+<div class="welcomeBox">
+  <h2 class="welcomeTitle">WELCOME TO MPL SEASON - 3</h2>
+  <h5 class="welcomeSub">Website Designed & Developed by MOHAMMAD SUFIYAN</h5>
+</div>
 
 <!-- IMPORT DATA -->
 <div class="card">
   <div class="details">
     <h3>📂 Import Auction Data</h3>
     <input type="file" accept=".json" onchange="importData(this)">
-    <div class="small">Import file from Admin</div>
+    <div class="small">Import file from Pratham Acharya</div>
   </div>
 </div>
 
@@ -120,7 +213,7 @@ input{text-transform:uppercase}
 
 <!-- TEAMS LIST -->
 <div id="teamsSection">
-  <h2>🏏 Teams</h2>
+  <h2>🏏 MPL SEASON - 3 Teams</h2>
   <div id="teamsGrid" class="grid"></div>
 </div>
 
@@ -174,7 +267,10 @@ function showPlayer(){
       <div class="name">${p.name}</div>
       <div class="row"><span>ROLE</span><span>${p.role}</span></div>
       <div class="row"><span>PLACE</span><span>${p.place || "-"}</span></div>
-      <div class="row"><span>TEAM</span><span>${p.team || "NOT ASSIGNED"}</span></div>
+      <div class="row">
+        <span>TEAM</span>
+        <span>${p.team ? teams[p.team]?.name : "NOT ASSIGNED"}</span>
+      </div>
       <div class="row"><span>BASE</span><span>2000</span></div>
     </div>
   </div>`;
@@ -187,34 +283,73 @@ function loadTeams(){
     teamsGrid.innerHTML+=`
     <div class="teamCard" onclick="openTeam('${t}')">
       <img src="${teams[t].logo}">
-      <div class="info">${t}</div>
+      <div class="info">${teams[t].name}</div>
     </div>`;
   });
 }
 
-/* TEAM DETAIL */
+/* TEAM DETAIL (ONLY FEATURE ADDED HERE) */
 function openTeam(team){
   teamsSection.style.display="none";
   teamDetail.style.display="block";
 
-  let html=`
-    <button onclick="backToTeams()">⬅ Back</button>
-    <div class="card">
-      <img class="photo" src="${teams[team].logo}">
+  let t = teams[team];
+  let l = t.leaders || {};
+
+  let html = `<button onclick="backToTeams()">⬅ Back</button>`;
+
+  /* OWNER */
+  if(l.owner){
+    html += `
+   <div class="card ownerCard">
+      <img class="photo" src="${l.owner.img}">
       <div class="details">
-        <div class="name">${team}</div>
-        <div class="row">
-          <span>OWNER</span><span>${teams[team].owner}</span>
-        </div>
+        <div class="name">${l.owner.name}</div>
+        <span class="badge owner">OWNER</span>
       </div>
-    </div>
+    </div>`;
+  }
 
-    <h3>PLAYERS</h3>
-    <div class="grid">`;
+  /* ICONS + CAPTAIN */
+  html += `<div class="leadersGrid">`;
 
+
+  if(l.icons){
+    l.icons.forEach(i=>{
+      html += `
+      <div class="playerCard iconCard">
+
+        <img src="${i.img}">
+        <div class="info">
+          ${i.name}<br>
+          <span class="small">${i.category}</span><br>
+          <span class="small">${i.place}</span><br>
+          <span class="badge icon">ICON</span>
+        </div>
+      </div>`;
+    });
+  }
+
+  if(l.captain){
+    html += `
+    <div class="playerCard captainCard">
+
+      <img src="${l.captain.img}">
+      <div class="info">
+        ${l.captain.name}<br>
+        <span class="small">${l.captain.category}</span><br>
+        <span class="small">${l.captain.place}</span><br>
+        <span class="badge captain">CAPTAIN</span>
+        </div>
+      </div>`;
+  }
+
+  html += `</div><h3>PLAYERS</h3><div class="grid">`;
+
+  /* EXISTING PLAYERS (UNCHANGED) */
   Object.values(players).forEach(p=>{
     if(p.team === team){
-      html+=`
+      html += `
       <div class="playerCard">
         <img src="${p.img}">
         <div class="info">
